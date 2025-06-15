@@ -6,8 +6,9 @@ function ItemDetail() {
   const [item, setItem] = useState(null);
   const navigate = useNavigate();
 
+
   useEffect(() => {
-    fetch('/api/items/' + id)
+    fetch(`http://localhost:3001/api/items/${id}`)
       .then(res => res.ok ? res.json() : Promise.reject(res))
       .then(setItem)
       .catch(() => navigate('/'));
@@ -16,7 +17,7 @@ function ItemDetail() {
   if (!item) return <p>Loading...</p>;
 
   return (
-    <div style={{padding: 16}}>
+    <div style={{ padding: 16 }}>
       <h2>{item.name}</h2>
       <p><strong>Category:</strong> {item.category}</p>
       <p><strong>Price:</strong> ${item.price}</p>

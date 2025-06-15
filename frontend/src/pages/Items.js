@@ -3,30 +3,63 @@ import { useData } from '../state/DataContext';
 import { Link } from 'react-router-dom';
 
 function Items() {
-  const { items, fetchItems } = useData();
+  const { items, pagination, fetchItems } = useData();
 
   useEffect(() => {
     let active = true;
 
-    // Intentional bug: setState called after component unmount if request is slow
-    fetchItems().catch(console.error);
+    const loadItems = async () => {
+      try {
+        if (active) {
+          await fetchItems(pagination.currentPage, pagination.itemsPerPage);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
 
-    // Clean‑up to avoid memory leak (candidate should implement)
+    loadItems();
     return () => {
       active = false;
     };
-  }, [fetchItems]);
+  }, [fetchItems, pagination.currentPage, pagination.itemsPerPage]);
+
+  const handlePageChange = (newPage) => {
+    fetchItems(newPage, pagination.itemsPerPage);
+  };
 
   if (!items.length) return <p>Loading...</p>;
 
   return (
-    <ul>
-      {items.map(item => (
-        <li key={item.id}>
-          <Link to={'/items/' + item.id}>{item.name}</Link>
-        </li>
-      ))}
-    </ul>
+    <div>
+      <ul>
+        {items.map(item => (
+          <li key={item.id}>
+            <Link to={'/items/' + item.id}>{item.name}</Link>
+          </li>
+        ))}
+      </ul>
+      
+      <div className="pagination">
+        <button 
+          onClick={() => handlePageChange(pagination.currentPage - 1)}
+          disabled={pagination.currentPage === 1}
+        >
+          Anterior
+        </button>
+        
+        <span>
+          Página {pagination.currentPage} de {pagination.totalPages}
+        </span>
+        
+        <button 
+          onClick={() => handlePageChange(pagination.currentPage + 1)}
+          disabled={pagination.currentPage === pagination.totalPages}
+        >
+          Próxima
+        </button>
+      </div>
+    </div>
   );
 }
 
